@@ -9,7 +9,7 @@ export function StartButton() {
             className="bg-blue-600 hover:bg-blue-700 text-white px-16 py-6 font-bold rounded-2xl"
             onClick={() => navigate("/battle")}
             >
-                対戦スタート
+                対局スタート
             </button>
         </div>
     )
