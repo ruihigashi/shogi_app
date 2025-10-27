@@ -1,9 +1,11 @@
-import { StartButton } from "../components/Button/Buttons/StartButton";
+import { BackGround } from "../components/BackGround";
+import { BackPageButton } from "../components/Buttons/BackPageButton";
+import { ModeSetting } from "../components/ModeSetting";
 
 export function SettingPage() {
     return (
         <div>
-         <StartButton />
+            <BackGround title="モード選択" nextPage={<ModeSetting />} backPage={<BackPageButton />}/>
         </div>
     )
 }
