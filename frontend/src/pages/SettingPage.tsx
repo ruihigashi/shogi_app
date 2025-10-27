@@ -1,9 +1,10 @@
-import { StartButton } from "../components/Button/Buttons/StartButton";
+import { BackGround } from "../components/BackGround";
+import { StartButton } from "../components/Buttons/StartButton";
 
 export function SettingPage() {
     return (
         <div>
-         <StartButton />
+            <BackGround title="モード選択" button={<StartButton />} />
         </div>
     )
 }
