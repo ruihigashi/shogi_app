@@ -121,16 +121,18 @@ export function ModeSetting() {
                     </>
                 )}
 
-                <div className="flex justify-center items-center">
-                    <StartButton
-                        config={{
-                            firstPlayer,
-                            secondPlayer,
-                            handicap,
-                            handicapSide,
-                            handicapType,
-                        }}
-                    />
+                <div className="flex justify-center items-center h-16">
+                    {(handicap === "none" || (handicap === "あり" && handicapSide && handicapType)) && firstPlayer && secondPlayer && (
+                        <StartButton
+                            config={{
+                                firstPlayer,
+                                secondPlayer,
+                                handicap,
+                                handicapSide,
+                                handicapType,
+                            }}
+                        />
+                    )}
                 </div>
 
             </div>

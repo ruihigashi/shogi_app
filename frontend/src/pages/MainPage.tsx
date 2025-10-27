@@ -4,7 +4,10 @@ import { ModeButton } from "../components/Buttons/ModeButton";
 export function MainPage() {
     return (
         <div>
-            <BackGround title="将棋対戦ゲーム" nextPage={<ModeButton />} />
+            <BackGround
+                title="将棋対戦ゲーム"
+                nextPage={<ModeButton />}
+            />
         </div>
     )
 }
