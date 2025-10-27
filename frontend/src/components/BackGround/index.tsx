@@ -1,4 +1,4 @@
-import type { PageType } from "../../types/Props/props"
+import type { PageType } from "../../types/shogi"
 
 export function BackGround(props: PageType) {
     const { title, nextPage, backPage, shogiBoard } = props;
