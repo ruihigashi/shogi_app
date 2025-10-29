@@ -6,3 +6,13 @@ export type PageType = {
     backPage?: React.ReactNode,
     shogiBoard?: React.ReactNode
 }
+
+export type ShogiBoardProps = {
+    config: {
+        firstPlayer: string;
+        secondPlayer: string;
+        handicap: string;
+        handicapSide: string;
+        handicapType: string;
+    };
+};
