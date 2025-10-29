@@ -2,13 +2,14 @@ import { useState } from "react";
 import { StartButton } from "../Buttons/StartButton";
 
 export function ModeSetting() {
+    // ハンデありなしのState
     const [handicap, setHandicap] = useState("none");
     const [handicapSide, setHandicapSide] = useState("");
     const [handicapType, setHandicapType] = useState("");
     const [firstPlayer, setFirstPlayer] = useState("");
     const [secondPlayer, setSecondPlayer] = useState("");
 
-    const handicapOptions = ["香落ち", "右香落ち", "角落ち", "飛車落ち", "二枚落ち", "四枚落ち", "六枚落ち", "八枚落ち", "九枚落ち", "十枚落ち", "八枚落ち（トンボ）", "青空将棋"];
+    const handicapOptions = ["香落ち", "右香落ち", "角落ち", "飛車落ち", "飛香落ち", "二枚落ち", "四枚落ち", "六枚落ち", "八枚落ち", "十枚落ち", "九枚落ち", "八枚落ち（トンボ）", "青空将棋"];
 
     return (
         <div className="border-2 rounded-2xl bg-white px-10 pt-10 pb-10 w-[400px]">
@@ -35,35 +36,37 @@ export function ModeSetting() {
                     />
                 </div>
 
-                <div className="flex flex-col">
-                    <label>ハンデ</label>
-                    <div className="flex space-x-4">
-                        <label className="flex items-center space-x-1">
-                            <input
-                                type="radio"
-                                name="handicap"
-                                value="あり"
-                                checked={handicap === "あり"}
-                                onChange={() => setHandicap("あり")}
-                            />
-                            <span>あり</span>
-                        </label>
-                        <label className="flex items-center space-x-1">
-                            <input
-                                type="radio"
-                                name="handicap"
-                                value="none"
-                                checked={handicap === "none"}
-                                onChange={() => {
-                                    setHandicap("none");
-                                    setHandicapSide("");
-                                    setHandicapType("");
-                                }}
-                            />
-                            <span>なし</span>
-                        </label>
+                {firstPlayer && secondPlayer && (
+                    <div className="flex flex-col">
+                        <label>ハンデ</label>
+                        <div className="flex space-x-4">
+                            <label className="flex items-center space-x-1">
+                                <input
+                                    type="radio"
+                                    name="handicap"
+                                    value="あり"
+                                    checked={handicap === "あり"}
+                                    onChange={() => setHandicap("あり")}
+                                />
+                                <span>あり</span>
+                            </label>
+                            <label className="flex items-center space-x-1">
+                                <input
+                                    type="radio"
+                                    name="handicap"
+                                    value="none"
+                                    checked={handicap === "none"}
+                                    onChange={() => {
+                                        setHandicap("none");
+                                        setHandicapSide("");
+                                        setHandicapType("");
+                                    }}
+                                />
+                                <span>なし</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {handicap === "あり" && (
                     <>
