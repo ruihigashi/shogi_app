@@ -1,30 +1,128 @@
-import { type ShogiBoardProps } from "../../types/shogi";
-import { applyHandicap } from "./Logic/Logic";
+import { useEffect, useState } from "react";
+import { type ShogiBoardProps, type BoardState, type Piece, type Player, type PieceType } from "../../types/shogi";
+
+// Helper function to create a piece
+const piece = (type: PieceType, player: Player): Piece => ({ type, player });
+
+const initialBoard: BoardState = [
+    [piece('香車', 'second'), piece('桂馬', 'second'), piece('銀将', 'second'), piece('金将', 'second'), piece('王将', 'second'), piece('金将', 'second'), piece('銀将', 'second'), piece('桂馬', 'second'), piece('香車', 'second')],
+    [null, piece('飛車', 'second'), null, null, null, null, null, piece('角行', 'second'), null],
+    [piece('歩兵', 'second'), piece('歩兵', 'second'), piece('歩兵', 'second'), piece('歩兵', 'second'), piece('歩兵', 'second'), piece('歩兵', 'second'), piece('歩兵', 'second'), piece('歩兵', 'second'), piece('歩兵', 'second')],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [piece('歩兵', 'first'), piece('歩兵', 'first'), piece('歩兵', 'first'), piece('歩兵', 'first'), piece('歩兵', 'first'), piece('歩兵', 'first'), piece('歩兵', 'first'), piece('歩兵', 'first'), piece('歩兵', 'first')],
+    [null, piece('角行', 'first'), null, null, null, null, null, piece('飛車', 'first'), null],
+    [piece('香車', 'first'), piece('桂馬', 'first'), piece('銀将', 'first'), piece('金将', 'first'), piece('玉将', 'first'), piece('金将', 'first'), piece('銀将', 'first'), piece('桂馬', 'first'), piece('香車', 'first')],
+];
+
+const applyHandicap = (board: BoardState, handicapType: string, handicapSide: string): BoardState => {
+    const newBoard = board.map(row => [...row]);
+    const player = handicapSide === "先手" ? "first" : "second";
+    const playerRow = player === "first" ? 8 : 0;
+    const majorRow = player === "first" ? 7 : 1;
 
 
+    switch (handicapType) {
+        case "香落ち":
+            newBoard[playerRow][0] = null;
+            break;
+        case "右香落ち":
+            newBoard[playerRow][8] = null;
+            break;
+        case "角落ち":
+            newBoard[majorRow][player === "first" ? 1 : 7] = null;
+            break;
+        case "飛車落ち":
+            newBoard[majorRow][player === "first" ? 7 : 1] = null;
+            break;
+        case "飛香落ち":
+            newBoard[playerRow][8] = null;
+            newBoard[majorRow][player === "first" ? 7 : 1] = null;
+            break;
+        case "二枚落ち":
+            newBoard[majorRow][player === "first" ? 7 : 1] = null;
+            newBoard[majorRow][player === "first" ? 1 : 7] = null;
+            break;
+    }
+    return newBoard;
+};
 
 export function ShogiBoard(props: ShogiBoardProps) {
     const { config } = props;
+    const [board, setBoard] = useState<BoardState>(initialBoard);
+    const [selectedPiece, setSelectedPiece] = useState<{ row: number; col: number } | null>(null);
+    const [currentPlayer, setCurrentPlayer] = useState<Player>('first');
+    const [capturedByFirst, setCapturedByFirst] = useState<Piece[]>([]);
+    const [capturedBySecond, setCapturedBySecond] = useState<Piece[]>([]);
 
-    const initialBoard = [
-        ["香", "桂", "銀", "金", "王", "金", "銀", "桂", "香"],
-        ["", "飛", "", "", "", "", "", "角", ""],
-        ["歩", "歩", "歩", "歩", "歩", "歩", "歩", "歩", "歩"],
-        ["", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", ""],
-        ["", "", "", "", "", "", "", "", ""],
-        ["歩", "歩", "歩", "歩", "歩", "歩", "歩", "歩", "歩"],
-        ["", "角", "", "", "", "", "", "飛", ""],
-        ["香", "桂", "銀", "金", "玉", "金", "銀", "桂", "香"],
-    ];
+    useEffect(() => {
+        if (config.handicap === "あり") {
+            const handicappedBoard = applyHandicap(initialBoard, config.handicapType, config.handicapSide);
+            setBoard(handicappedBoard);
+        }
+    }, [config]);
 
-    const boardState = config.handicap === "あり" ? applyHandicap(initialBoard, config.handicapType, config.handicapSide) : initialBoard;
+    const handleSquareClick = (row: number, col: number) => {
+        if (selectedPiece) {
+            const newBoard = [...board.map(row => [...row])];
+            const selected = newBoard[selectedPiece.row][selectedPiece.col];
 
-    const board = boardState.map((row, i) => (
+            if (selected) {
+                const targetPiece = newBoard[row][col];
+                if (!targetPiece || targetPiece.player !== selected.player) {
+                    if (targetPiece) {
+                        const capturedPiece = { ...targetPiece, player: currentPlayer };
+                        if (currentPlayer === 'first') {
+                            setCapturedByFirst([...capturedByFirst, capturedPiece]);
+                        } else {
+                            setCapturedBySecond([...capturedBySecond, capturedPiece]);
+                        }
+                    }
+
+                    const pieceToMove = { ...selected };
+
+                    const promotionZone = pieceToMove.player === 'first' ? [0, 1, 2] : [6, 7, 8];
+                    const canPromote =
+                        (promotionZone.includes(row) || promotionZone.includes(selectedPiece.row)) &&
+                        ['歩兵', '香車', '桂馬', '銀将', '角行', '飛車'].includes(pieceToMove.type);
+
+                    if (canPromote) {
+                        const promote = window.confirm('成りますか？');
+                        if (promote) {
+                            switch (pieceToMove.type) {
+                                case '歩兵': pieceToMove.type = 'と金'; break;
+                                case '香車': pieceToMove.type = '成香'; break;
+                                case '桂馬': pieceToMove.type = '成桂'; break;
+                                case '銀将': pieceToMove.type = '成銀'; break;
+                                case '角行': pieceToMove.type = '竜馬'; break;
+                                case '飛車': pieceToMove.type = '竜王'; break;
+                            }
+                        }
+                    }
+
+                    newBoard[row][col] = pieceToMove;
+                    newBoard[selectedPiece.row][selectedPiece.col] = null;
+                    setBoard(newBoard);
+                    setSelectedPiece(null);
+                    setCurrentPlayer(currentPlayer === 'first' ? 'second' : 'first');
+                } else if (targetPiece.player === selected.player) {
+                    setSelectedPiece({ row, col });
+                }
+            }
+        } else {
+            const piece = board[row][col];
+            if (piece && piece.player === currentPlayer) {
+                setSelectedPiece({ row, col });
+            }
+        }
+    };
+
+    const boardComponent = board.map((row, i) => (
         <div key={i} className="flex">
             {row.map((piece, j) => (
-                <div key={`${i}-${j}`} className="w-12 h-12 border border-black flex justify-center items-center">
-                    {piece}
+                <div key={`${i}-${j}`} className={`w-20 h-14 border border-black flex justify-center items-center ${selectedPiece && selectedPiece.row === i && selectedPiece.col === j ? 'bg-blue-300' : ''}`} onClick={() => handleSquareClick(i, j)}>
+                    {piece ? piece.type : ""}
                 </div>
             ))}
         </div>
@@ -42,12 +140,14 @@ export function ShogiBoard(props: ShogiBoardProps) {
 
             {/* 持ち駒 */}
             <div>
-
+                {capturedBySecond.map((piece, index) => (
+                    <span key={index}>{piece.type}</span>
+                ))}
             </div>
 
             {/* 盤面 */}
-            <div className="flex flex-col border-2 border-black w-[434px] h-[434px] bg-amber-500">
-                {board}
+            <div className="flex flex-col border-2 border-black w-[500px] h-[504px] bg-amber-500">
+                {boardComponent}
             </div>
 
             {/* プレイヤー名表示 */}
@@ -60,7 +160,9 @@ export function ShogiBoard(props: ShogiBoardProps) {
 
             {/* 持ち駒 */}
             <div className="w-full h-10 bg-amber-700">
-
+                {capturedByFirst.map((piece, index) => (
+                    <span key={index}>{piece.type}</span>
+                ))}
             </div>
         </div>
     );

@@ -1,11 +1,32 @@
-import type React from "react"
+import type { ReactNode } from "react";
 
-export type PageType = {
-    title: string,
-    nextPage?: React.ReactNode,
-    backPage?: React.ReactNode,
-    shogiBoard?: React.ReactNode
+export type Player = 'first' | 'second';
+
+export type PieceType =
+  | '歩兵' 
+  | '香車' 
+  | '桂馬' 
+  | '銀将' 
+  | '金将' 
+  | '角行' 
+  | '飛車' 
+  | '王将' 
+  | '玉将' 
+  | 'と金' 
+  | '成香' 
+  | '成桂' 
+  | '成銀' 
+  | '竜馬' 
+  | '竜王';
+
+export interface Piece {
+  type: PieceType;
+  player: Player;
 }
+
+export type Square = Piece | null;
+
+export type BoardState = Square[][];
 
 export type ShogiBoardProps = {
     config: {
@@ -16,3 +37,10 @@ export type ShogiBoardProps = {
         handicapType: string;
     };
 };
+
+export type PageType = {
+    title: string;
+    nextPage?:ReactNode
+    backPage?:ReactNode; 
+    shogiBoard?:ReactNode;
+}
