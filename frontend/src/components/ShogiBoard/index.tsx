@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { type ShogiBoardProps, type BoardState, type Piece, type Player, type PieceType } from "../../types/shogi";
+import { isValidMove } from "./move-validation";
 
 // Helper function to create a piece
 const piece = (type: PieceType, player: Player): Piece => ({ type, player });
@@ -55,6 +56,7 @@ export function ShogiBoard(props: ShogiBoardProps) {
     const [currentPlayer, setCurrentPlayer] = useState<Player>('first');
     const [capturedByFirst, setCapturedByFirst] = useState<Piece[]>([]);
     const [capturedBySecond, setCapturedBySecond] = useState<Piece[]>([]);
+    const [possibleMoves, setPossibleMoves] = useState<{ row: number; col: number }[]>([]);
 
     useEffect(() => {
         if (config.handicap === "あり") {
@@ -65,14 +67,30 @@ export function ShogiBoard(props: ShogiBoardProps) {
 
     const handleSquareClick = (row: number, col: number) => {
         if (selectedPiece) {
-            const newBoard = [...board.map(row => [...row])];
-            const selected = newBoard[selectedPiece.row][selectedPiece.col];
+            const targetPiece = board[row][col];
 
-            if (selected) {
-                const targetPiece = newBoard[row][col];
-                if (!targetPiece || targetPiece.player !== selected.player) {
-                    if (targetPiece) {
-                        const capturedPiece = { ...targetPiece, player: currentPlayer };
+            if (targetPiece && targetPiece.player === currentPlayer) {
+                setSelectedPiece({ row, col });
+                const moves = [];
+                for (let r = 0; r < 9; r++) {
+                    for (let c = 0; c < 9; c++) {
+                        if (isValidMove(board, { row, col }, { row: r, col: c })) {
+                            moves.push({ row: r, col: c });
+                        }
+                    }
+                }
+                setPossibleMoves(moves);
+                return;
+            }
+
+            if (isValidMove(board, selectedPiece, { row, col })) {
+                const newBoard = [...board.map(r => [...r])];
+                const selected = newBoard[selectedPiece.row][selectedPiece.col];
+
+                if (selected) {
+                    const target = newBoard[row][col];
+                    if (target) {
+                        const capturedPiece = { ...target, player: currentPlayer };
                         if (currentPlayer === 'first') {
                             setCapturedByFirst([...capturedByFirst, capturedPiece]);
                         } else {
@@ -105,26 +123,40 @@ export function ShogiBoard(props: ShogiBoardProps) {
                     newBoard[selectedPiece.row][selectedPiece.col] = null;
                     setBoard(newBoard);
                     setSelectedPiece(null);
+                    setPossibleMoves([]);
                     setCurrentPlayer(currentPlayer === 'first' ? 'second' : 'first');
-                } else if (targetPiece.player === selected.player) {
-                    setSelectedPiece({ row, col });
                 }
+            } else {
+                setSelectedPiece(null);
+                setPossibleMoves([]);
             }
         } else {
             const piece = board[row][col];
             if (piece && piece.player === currentPlayer) {
                 setSelectedPiece({ row, col });
+                const moves = [];
+                for (let r = 0; r < 9; r++) {
+                    for (let c = 0; c < 9; c++) {
+                        if (isValidMove(board, { row, col }, { row: r, col: c })) {
+                            moves.push({ row: r, col: c });
+                        }
+                    }
+                }
+                setPossibleMoves(moves);
             }
         }
     };
 
     const boardComponent = board.map((row, i) => (
         <div key={i} className="flex">
-            {row.map((piece, j) => (
-                <div key={`${i}-${j}`} className={`w-20 h-14 border border-black flex justify-center items-center ${selectedPiece && selectedPiece.row === i && selectedPiece.col === j ? 'bg-blue-300' : ''}`} onClick={() => handleSquareClick(i, j)}>
-                    {piece ? piece.type : ""}
-                </div>
-            ))}
+            {row.map((piece, j) => {
+                const isPossibleMove = possibleMoves.some(move => move.row === i && move.col === j);
+                return (
+                    <div key={`${i}-${j}`} className={`w-20 h-14 border border-black flex justify-center items-center ${selectedPiece && selectedPiece.row === i && selectedPiece.col === j ? 'bg-blue-300' : ''} ${isPossibleMove ? 'bg-green-300' : ''}`} onClick={() => handleSquareClick(i, j)}>
+                        {piece ? piece.type : ""}
+                    </div>
+                );
+            })}
         </div>
     ));
 
