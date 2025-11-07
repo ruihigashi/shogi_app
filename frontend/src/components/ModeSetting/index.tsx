@@ -12,10 +12,10 @@ export function ModeSetting() {
     const handicapOptions = ["香落ち", "右香落ち", "角落ち", "飛車落ち", "飛香落ち", "二枚落ち", "四枚落ち", "六枚落ち", "八枚落ち", "十枚落ち", "九枚落ち", "八枚落ち（トンボ）", "青空将棋"];
 
     return (
-        <div className="border-2 rounded-2xl bg-white px-10 pt-10 pb-10 w-[400px]">
+        <div className="border-2 rounded-2xl bg-white sm:p-6 w-full max-w-md overflow-y-auto max-h-[80vh]">
             <div className="flex flex-col space-y-4">
                 <div className="flex flex-col">
-                    <label>先手</label>
+                    <label className="text-sm sm:text-base">先手</label>
                     <input
                         type="text"
                         className="bg-white border-2 rounded-sm p-1"
@@ -26,7 +26,7 @@ export function ModeSetting() {
                 </div>
 
                 <div className="flex flex-col">
-                    <label>後手</label>
+                    <label className="text-sm sm:text-base">後手</label>
                     <input
                         type="text"
                         className="bg-white border-2 rounded-sm p-1"
@@ -38,7 +38,7 @@ export function ModeSetting() {
 
                 {firstPlayer && secondPlayer && (
                     <div className="flex flex-col">
-                        <label>ハンデ</label>
+                        <label className="text-sm sm:text-base">ハンデ</label>
                         <div className="flex space-x-4">
                             <label className="flex items-center space-x-1">
                                 <input
@@ -48,7 +48,7 @@ export function ModeSetting() {
                                     checked={handicap === "あり"}
                                     onChange={() => setHandicap("あり")}
                                 />
-                                <span>あり</span>
+                                <span className="text-sm sm:text-base">あり</span>
                             </label>
                             <label className="flex items-center space-x-1">
                                 <input
@@ -62,7 +62,7 @@ export function ModeSetting() {
                                         setHandicapType("");
                                     }}
                                 />
-                                <span>なし</span>
+                                <span className="text-sm sm:text-base">なし</span>
                             </label>
                         </div>
                     </div>
@@ -71,7 +71,7 @@ export function ModeSetting() {
                 {handicap === "あり" && (
                     <>
                         <div className="flex flex-col">
-                            <label>どちらにハンデを設けますか？</label>
+                            <label className="text-sm sm:text-base">どちらにハンデを設けますか？</label>
                             <div className="flex space-x-4">
                                 <label className="flex items-center space-x-1">
                                     <input
@@ -84,7 +84,7 @@ export function ModeSetting() {
                                             setHandicapType("");
                                         }}
                                     />
-                                    <span>先手</span>
+                                    <span className="text-sm sm:text-base">先手</span>
                                 </label>
                                 <label className="flex items-center space-x-1">
                                     <input
@@ -97,14 +97,14 @@ export function ModeSetting() {
                                             setHandicapType("");
                                         }}
                                     />
-                                    <span>後手</span>
+                                    <span className="text-sm sm:text-base">後手</span>
                                 </label>
                             </div>
                         </div>
 
                         {handicapSide && (
                             <div className="flex flex-col mt-3">
-                                <label>
+                                <label className="text-sm sm:text-base">
                                     {handicapSide} に与えるハンデを選んでください
                                 </label>
                                 <select

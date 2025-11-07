@@ -16,7 +16,7 @@ export function BackPageButton() {
     return (
         <div>
             <button
-                className="ml-5 my-5 w-16"
+                className="ml-5 my-2 w-14"
                 onClick={backPage}
             >
                 <img src={backpagebutton} alt="前ページ遷移" />

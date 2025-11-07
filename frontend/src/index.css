@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+body {
+    overflow: hidden;
+}
+
 .shogi-piece {
     display: inline-flex;
     justify-content: center;
@@ -41,4 +45,15 @@
     font-size: 1.1rem;
     font-weight: bold;
     color: white;
+}
+
+@media (max-width: 640px) {
+    .shogi-piece {
+        width: 32px;
+        height: 35px;
+        font-size: 0.875rem; /* text-sm */
+    }
+    .piece-count {
+        font-size: 0.9rem;
+    }
 }

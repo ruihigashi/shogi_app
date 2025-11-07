@@ -39,7 +39,7 @@ export type ShogiBoardProps = {
 };
 
 export type PageType = {
-    title: string;
+    title?: string;
     nextPage?:ReactNode
     backPage?:ReactNode; 
     shogiBoard?:ReactNode;

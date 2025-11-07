@@ -234,7 +234,7 @@ export function ShogiBoard(props: ShogiBoardProps) {
             {row.map((piece, j) => {
                 const isPossibleMove = possibleMoves.some(move => move.row === i && move.col === j);
                 return (
-                    <div key={`${i}-${j}`} className={`w-20 h-14 border border-black flex justify-center items-center ${selectedPiece && selectedPiece.row === i && selectedPiece.col === j ? 'bg-blue-300' : ''} ${isPossibleMove ? 'bg-green-300' : ''}`} onClick={() => handleSquareClick(i, j)}>
+                    <div key={`${i}-${j}`} className={`w-1/9 aspect-square border border-black flex justify-center items-center text-xs md:text-base ${selectedPiece && selectedPiece.row === i && selectedPiece.col === j ? 'bg-blue-300' : ''} ${isPossibleMove ? 'bg-green-300' : ''}`} onClick={() => handleSquareClick(i, j)}>
                         {piece ? piece.type : ""}
                     </div>
                 );
@@ -243,7 +243,7 @@ export function ShogiBoard(props: ShogiBoardProps) {
     ));
 
     return (
-        <div className="relative">
+        <div className="relative flex flex-row items-center px-4 space-x-4">
             {gameOver && (
                 <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-10">
                     <div className="text-4xl font-bold text-white">
@@ -251,65 +251,68 @@ export function ShogiBoard(props: ShogiBoardProps) {
                     </div>
                 </div>
             )}
-            {/* プレイヤー名表示 */}
-            <label className="flex justify-end items-center font-semibold text-xl">
-                後手：
-                <span className="font-bold text-2xl">
-                    {config.secondPlayer}
-                </span>
-            </label>
-
-            {/* 持ち駒 */}
-            <div className="captured-pieces-container">
-                {Object.entries(
-                    capturedBySecond.reduce((acc, piece) => {
-                        acc[piece.type] = (acc[piece.type] || 0) + 1;
-                        return acc;
-                    }, {} as Record<PieceType, number>)
-                ).map(([pieceType, count]) => {
-                    const piece = capturedBySecond.find(p => p.type === pieceType as PieceType)!;
-                    return (
-                        <div key={pieceType} className="captured-piece-group" onClick={() => handleCapturedPieceClick(piece, 'second')}>
-                            <div className={`shogi-piece ${selectedCapturedPiece && selectedCapturedPiece.player === 'second' && selectedCapturedPiece.piece.type === pieceType ? 'selected' : ''}`}>
-                                {pieceType}
+            {/* 後手の持ち駒 */}
+            <div className="w-40">
+                <label className="flex justify-center items-center font-semibold text-xl">
+                    後手：
+                    <span className="font-bold text-2xl">
+                        {config.secondPlayer}
+                    </span>
+                </label>
+                <div className="captured-pieces-container flex-col h-full">
+                    {Object.entries(
+                        capturedBySecond.reduce((acc, piece) => {
+                            acc[piece.type] = (acc[piece.type] || 0) + 1;
+                            return acc;
+                        }, {} as Record<PieceType, number>)
+                    ).map(([pieceType, count]) => {
+                        const piece = capturedBySecond.find(p => p.type === pieceType as PieceType)!;
+                        return (
+                            <div key={pieceType} className="captured-piece-group" onClick={() => handleCapturedPieceClick(piece, 'second')}>
+                                <div className={`shogi-piece ${selectedCapturedPiece && selectedCapturedPiece.player === 'second' && selectedCapturedPiece.piece.type === pieceType ? 'selected' : ''}`}>
+                                    {pieceType}
+                                </div>
+                                {count > 1 && <span className="piece-count">x{count}</span>}
                             </div>
-                            {count > 1 && <span className="piece-count">x{count}</span>}
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
 
-            {/* 盤面 */}
-            <div className="flex flex-col border-2 border-black w-[500px] h-[504px] bg-amber-500">
-                {boardComponent}
+            {/* 中央エリア */}
+            <div className="flex items-center">
+                {/* 盤面 */}
+                <div className="flex flex-col border-2 border-black max-w-[90vw] max-h-[95vh] bg-amber-500">
+                    {boardComponent}
+                </div>
             </div>
 
-            {/* プレイヤー名表示 */}
-            <label className="flex justify-start items-center text-red-500 font-semibold text-xl">
-                先手：
-                <span className="font-bold text-2xl">
-                    {config.firstPlayer}
-                </span>
-            </label>
-
-            {/* 持ち駒 */}
-            <div className="captured-pieces-container">
-                {Object.entries(
-                    capturedByFirst.reduce((acc, piece) => {
-                        acc[piece.type] = (acc[piece.type] || 0) + 1;
-                        return acc;
-                    }, {} as Record<PieceType, number>)
-                ).map(([pieceType, count]) => {
-                    const piece = capturedByFirst.find(p => p.type === pieceType as PieceType)!;
-                    return (
-                        <div key={pieceType} className="captured-piece-group" onClick={() => handleCapturedPieceClick(piece, 'first')}>
-                            <div className={`shogi-piece ${selectedCapturedPiece && selectedCapturedPiece.player === 'first' && selectedCapturedPiece.piece.type === pieceType ? 'selected' : ''}`}>
-                                {pieceType}
+            {/* 先手の持ち駒 */}
+            <div className="w-40">
+                <label className="flex justify-center items-center text-red-500 font-semibold text-xl">
+                    先手：
+                    <span className="font-bold text-2xl">
+                        {config.firstPlayer}
+                    </span>
+                </label>
+                <div className="captured-pieces-container flex-col h-full">
+                    {Object.entries(
+                        capturedByFirst.reduce((acc, piece) => {
+                            acc[piece.type] = (acc[piece.type] || 0) + 1;
+                            return acc;
+                        }, {} as Record<PieceType, number>)
+                    ).map(([pieceType, count]) => {
+                        const piece = capturedByFirst.find(p => p.type === pieceType as PieceType)!;
+                        return (
+                            <div key={pieceType} className="captured-piece-group" onClick={() => handleCapturedPieceClick(piece, 'first')}>
+                                <div className={`shogi-piece ${selectedCapturedPiece && selectedCapturedPiece.player === 'first' && selectedCapturedPiece.piece.type === pieceType ? 'selected' : ''}`}>
+                                    {pieceType}
+                                </div>
+                                {count > 1 && <span className="piece-count">x{count}</span>}
                             </div>
-                            {count > 1 && <span className="piece-count">x{count}</span>}
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

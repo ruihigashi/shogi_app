@@ -9,6 +9,7 @@ export function SettingPage() {
                 title="モード選択"
                 nextPage={<ModeSetting />}
                 backPage={<BackPageButton />}
+                titleClassName="text-3xl md:text-4xl"
             />
         </div>
     )
