@@ -143,6 +143,16 @@ export function ShogiBoard(props: ShogiBoardProps) {
                             setWinner(currentPlayer);
                         } else {
                             const capturedPiece = { ...target, player: currentPlayer };
+                            // Un-promote the piece if it is promoted
+                            switch (capturedPiece.type) {
+                                case 'と金': capturedPiece.type = '歩兵'; break;
+                                case '成香': capturedPiece.type = '香車'; break;
+                                case '成桂': capturedPiece.type = '桂馬'; break;
+                                case '成銀': capturedPiece.type = '銀将'; break;
+                                case '竜馬': capturedPiece.type = '角行'; break;
+                                case '竜王': capturedPiece.type = '飛車'; break;
+                            }
+
                             if (currentPlayer === 'first') {
                                 setCapturedByFirst([...capturedByFirst, capturedPiece]);
                             } else {
