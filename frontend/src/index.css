@@ -1,1 +1,44 @@
 @import "tailwindcss";
+
+.shogi-piece {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 44px;
+    background-color: #f0d9b5; /* 木目調の色 */
+    border: 1px solid #333;
+    clip-path: polygon(50% 0%, 100% 38%, 100% 100%, 0% 100%, 0% 38%);
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none; /* テキスト選択を防ぐ */
+    margin: 2px;
+}
+
+.shogi-piece.selected {
+    background-color: #6ab7ff; /* 選択時の色 */
+}
+
+.captured-pieces-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 50px;
+    padding: 5px;
+    background-color: #c19a6b; /* 駒台の色 */
+    border: 2px solid #5c4033;
+    border-radius: 4px;
+}
+
+.captured-piece-group {
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+}
+
+.piece-count {
+    margin-left: 4px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+}

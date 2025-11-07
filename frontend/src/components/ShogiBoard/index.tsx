@@ -57,6 +57,9 @@ export function ShogiBoard(props: ShogiBoardProps) {
     const [capturedByFirst, setCapturedByFirst] = useState<Piece[]>([]);
     const [capturedBySecond, setCapturedBySecond] = useState<Piece[]>([]);
     const [possibleMoves, setPossibleMoves] = useState<{ row: number; col: number }[]>([]);
+    const [selectedCapturedPiece, setSelectedCapturedPiece] = useState<{ piece: Piece; player: Player } | null>(null);
+    const [gameOver, setGameOver] = useState(false);
+    const [winner, setWinner] = useState<Player | null>(null);
 
     useEffect(() => {
         if (config.handicap === "あり") {
@@ -65,24 +68,69 @@ export function ShogiBoard(props: ShogiBoardProps) {
         }
     }, [config]);
 
-    const handleSquareClick = (row: number, col: number) => {
-        if (selectedPiece) {
-            const targetPiece = board[row][col];
+    const handleCapturedPieceClick = (piece: Piece, player: Player) => {
+        if (gameOver || player !== currentPlayer) return;
 
-            if (targetPiece && targetPiece.player === currentPlayer) {
-                setSelectedPiece({ row, col });
-                const moves = [];
-                for (let r = 0; r < 9; r++) {
-                    for (let c = 0; c < 9; c++) {
-                        if (isValidMove(board, { row, col }, { row: r, col: c })) {
-                            moves.push({ row: r, col: c });
+        setSelectedPiece(null);
+        setSelectedCapturedPiece({ piece, player });
+
+        const moves = [];
+        for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+                if (board[r][c] === null) {
+                    // Check for two pawns in the same file
+                    if (piece.type === '歩兵') {
+                        let pawnExists = false;
+                        for (let i = 0; i < 9; i++) {
+                            const p = board[i][c];
+                            if (p && p.type === '歩兵' && p.player === currentPlayer) {
+                                pawnExists = true;
+                                break;
+                            }
                         }
+                        if (pawnExists) continue;
+                    }
+
+                    // Check for unmovable pieces
+                    if (piece.type === '歩兵' || piece.type === '香車') {
+                        if (player === 'first' && r === 0) continue;
+                        if (player === 'second' && r === 8) continue;
+                    }
+                    if (piece.type === '桂馬') {
+                        if (player === 'first' && (r === 0 || r === 1)) continue;
+                        if (player === 'second' && (r === 7 || r === 8)) continue;
+                    }
+
+                    moves.push({ row: r, col: c });
+                }
+            }
+        }
+        setPossibleMoves(moves);
+    };
+
+    const handleSquareClick = (row: number, col: number) => {
+        if (gameOver) return;
+
+        const pieceOnSquare = board[row][col];
+
+        // If clicking on a piece of the current player, select it or switch selection
+        if (pieceOnSquare && pieceOnSquare.player === currentPlayer) {
+            setSelectedCapturedPiece(null);
+            setSelectedPiece({ row, col });
+            const moves = [];
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    if (isValidMove(board, { row, col }, { row: r, col: c })) {
+                        moves.push({ row: r, col: c });
                     }
                 }
-                setPossibleMoves(moves);
-                return;
             }
+            setPossibleMoves(moves);
+            return;
+        }
 
+        // If a piece on the board is selected, try to move it
+        if (selectedPiece) {
             if (isValidMove(board, selectedPiece, { row, col })) {
                 const newBoard = [...board.map(r => [...r])];
                 const selected = newBoard[selectedPiece.row][selectedPiece.col];
@@ -90,11 +138,16 @@ export function ShogiBoard(props: ShogiBoardProps) {
                 if (selected) {
                     const target = newBoard[row][col];
                     if (target) {
-                        const capturedPiece = { ...target, player: currentPlayer };
-                        if (currentPlayer === 'first') {
-                            setCapturedByFirst([...capturedByFirst, capturedPiece]);
+                        if (target.type === '王将' || target.type === '玉将') {
+                            setGameOver(true);
+                            setWinner(currentPlayer);
                         } else {
-                            setCapturedBySecond([...capturedBySecond, capturedPiece]);
+                            const capturedPiece = { ...target, player: currentPlayer };
+                            if (currentPlayer === 'first') {
+                                setCapturedByFirst([...capturedByFirst, capturedPiece]);
+                            } else {
+                                setCapturedBySecond([...capturedBySecond, capturedPiece]);
+                            }
                         }
                     }
 
@@ -130,19 +183,38 @@ export function ShogiBoard(props: ShogiBoardProps) {
                 setSelectedPiece(null);
                 setPossibleMoves([]);
             }
-        } else {
-            const piece = board[row][col];
-            if (piece && piece.player === currentPlayer) {
-                setSelectedPiece({ row, col });
-                const moves = [];
-                for (let r = 0; r < 9; r++) {
-                    for (let c = 0; c < 9; c++) {
-                        if (isValidMove(board, { row, col }, { row: r, col: c })) {
-                            moves.push({ row: r, col: c });
-                        }
+        }
+        // If a captured piece is selected, try to drop it
+        else if (selectedCapturedPiece) {
+            const { piece, player } = selectedCapturedPiece;
+            if (possibleMoves.some(move => move.row === row && move.col === col)) {
+                const newBoard = [...board.map(r => [...r])];
+                newBoard[row][col] = { ...piece, player: player };
+
+                if (player === 'first') {
+                    const indexToRemove = capturedByFirst.findIndex(p => p.type === piece.type);
+                    if (indexToRemove > -1) {
+                        const newCaptured = [...capturedByFirst];
+                        newCaptured.splice(indexToRemove, 1);
+                        setCapturedByFirst(newCaptured);
+                    }
+                } else {
+                    const indexToRemove = capturedBySecond.findIndex(p => p.type === piece.type);
+                    if (indexToRemove > -1) {
+                        const newCaptured = [...capturedBySecond];
+                        newCaptured.splice(indexToRemove, 1);
+                        setCapturedBySecond(newCaptured);
                     }
                 }
-                setPossibleMoves(moves);
+
+                setBoard(newBoard);
+                setSelectedCapturedPiece(null);
+                setPossibleMoves([]);
+                setCurrentPlayer(currentPlayer === 'first' ? 'second' : 'first');
+            } else {
+                // If clicking an invalid square, deselect the captured piece
+                setSelectedCapturedPiece(null);
+                setPossibleMoves([]);
             }
         }
     };
@@ -161,7 +233,14 @@ export function ShogiBoard(props: ShogiBoardProps) {
     ));
 
     return (
-        <div>
+        <div className="relative">
+            {gameOver && (
+                <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-10">
+                    <div className="text-4xl font-bold text-white">
+                        {winner === 'first' ? `${config.firstPlayer}の勝ち` : `${config.secondPlayer}の勝ち`}
+                    </div>
+                </div>
+            )}
             {/* プレイヤー名表示 */}
             <label className="flex justify-end items-center font-semibold text-xl">
                 後手：
@@ -171,10 +250,23 @@ export function ShogiBoard(props: ShogiBoardProps) {
             </label>
 
             {/* 持ち駒 */}
-            <div>
-                {capturedBySecond.map((piece, index) => (
-                    <span key={index}>{piece.type}</span>
-                ))}
+            <div className="captured-pieces-container">
+                {Object.entries(
+                    capturedBySecond.reduce((acc, piece) => {
+                        acc[piece.type] = (acc[piece.type] || 0) + 1;
+                        return acc;
+                    }, {} as Record<PieceType, number>)
+                ).map(([pieceType, count]) => {
+                    const piece = capturedBySecond.find(p => p.type === pieceType as PieceType)!;
+                    return (
+                        <div key={pieceType} className="captured-piece-group" onClick={() => handleCapturedPieceClick(piece, 'second')}>
+                            <div className={`shogi-piece ${selectedCapturedPiece && selectedCapturedPiece.player === 'second' && selectedCapturedPiece.piece.type === pieceType ? 'selected' : ''}`}>
+                                {pieceType}
+                            </div>
+                            {count > 1 && <span className="piece-count">x{count}</span>}
+                        </div>
+                    );
+                })}
             </div>
 
             {/* 盤面 */}
@@ -191,10 +283,23 @@ export function ShogiBoard(props: ShogiBoardProps) {
             </label>
 
             {/* 持ち駒 */}
-            <div className="w-full h-10 bg-amber-700">
-                {capturedByFirst.map((piece, index) => (
-                    <span key={index}>{piece.type}</span>
-                ))}
+            <div className="captured-pieces-container">
+                {Object.entries(
+                    capturedByFirst.reduce((acc, piece) => {
+                        acc[piece.type] = (acc[piece.type] || 0) + 1;
+                        return acc;
+                    }, {} as Record<PieceType, number>)
+                ).map(([pieceType, count]) => {
+                    const piece = capturedByFirst.find(p => p.type === pieceType as PieceType)!;
+                    return (
+                        <div key={pieceType} className="captured-piece-group" onClick={() => handleCapturedPieceClick(piece, 'first')}>
+                            <div className={`shogi-piece ${selectedCapturedPiece && selectedCapturedPiece.player === 'first' && selectedCapturedPiece.piece.type === pieceType ? 'selected' : ''}`}>
+                                {pieceType}
+                            </div>
+                            {count > 1 && <span className="piece-count">x{count}</span>}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
