@@ -243,7 +243,7 @@ export function ShogiBoard(props: ShogiBoardProps) {
     ));
 
     return (
-        <div className="relative flex flex-row items-center px-4 space-x-4">
+        <div className="relative flex flex-col items-center my-[-24px]">
             {gameOver && (
                 <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-10">
                     <div className="text-4xl font-bold text-white">
@@ -252,7 +252,7 @@ export function ShogiBoard(props: ShogiBoardProps) {
                 </div>
             )}
             {/* 後手の持ち駒 */}
-            <div className="w-40">
+            <div className="w-76 my-1">
                 <label className="flex justify-center items-center font-semibold text-xl">
                     後手：
                     <span className="font-bold text-2xl">
@@ -277,6 +277,7 @@ export function ShogiBoard(props: ShogiBoardProps) {
                         );
                     })}
                 </div>
+
             </div>
 
             {/* 中央エリア */}
@@ -288,13 +289,7 @@ export function ShogiBoard(props: ShogiBoardProps) {
             </div>
 
             {/* 先手の持ち駒 */}
-            <div className="w-40">
-                <label className="flex justify-center items-center text-red-500 font-semibold text-xl">
-                    先手：
-                    <span className="font-bold text-2xl">
-                        {config.firstPlayer}
-                    </span>
-                </label>
+            <div className="w-76 my-1">
                 <div className="captured-pieces-container flex-col h-full">
                     {Object.entries(
                         capturedByFirst.reduce((acc, piece) => {
@@ -314,6 +309,12 @@ export function ShogiBoard(props: ShogiBoardProps) {
                     })}
                 </div>
             </div>
+            <label className="flex justify-center items-center text-red-500 font-semibold text-xl">
+                先手：
+                <span className="font-bold text-2xl">
+                    {config.firstPlayer}
+                </span>
+            </label>
         </div>
     );
 }
